@@ -18,57 +18,109 @@ class _CovidCountriesStatesViewState extends State<CovidCountriesStatesView> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<CovidCountriesCubit>(context, listen: false)
-        .fetchCountriesStates();
+    // BlocProvider.of<CovidCountriesCubit>(context, listen: false)
+    //     .fetchCountriesStates();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: TextFormField(
-                controller: searchController,
-                onChanged: (value) {
-                  setState(() {});
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search Country by Name',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(6.0),
+            child: TextFormField(
+              controller: searchController,
+              onChanged: (value) {
+                setState(() {});
+              },
+              decoration: InputDecoration(
+                hintText: 'Search Country by Name',
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
                 ),
               ),
             ),
-            Expanded(
-              child: BlocBuilder<CovidCountriesCubit, CovidCountriesStates>(
-                builder: (context, state) {
-                  if (state is! CovidCountriesLoadedState) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else {
-                    return ListView.builder(
-                      itemCount: state.countriesStates.length,
-                      itemBuilder: (context, index) {
-                        String countryName =
-                            state.countriesStates[index]['country'];
+          ),
+          Expanded(
+            child: BlocConsumer<CovidCountriesCubit, CovidCountriesStates>(
+              listener: (context, state) {
+                if (state is CovidCountriesErrorState) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Error Loading Data'),
+                    ),
+                  );
+                } else if (state is CovidCountriesLoadedState) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Data Loaded Successfully'),
+                    ),
+                  );
+                }
+              },
+              builder: (context, state) {
+                if (state is! CovidCountriesLoadedState) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ListView.builder(
+                    itemCount: state.countriesStates.length,
+                    itemBuilder: (context, index) {
+                      String countryName =
+                          state.countriesStates[index]['country'];
 
-                        if (searchController.text.isEmpty) {
-                          return GestureDetector(
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
-                              //Navigator.of(context).pop();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => CovidCountryDetailsScreen(
+                      if (searchController.text.isEmpty) {
+                        return GestureDetector(
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            //Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => CovidCountryDetailsScreen(
+                                    name: state.countriesStates[index]
+                                        ['country'],
+                                    image: state.countriesStates[index]
+                                        ['countryInfo']['flag'],
+                                    active: state.countriesStates[index]
+                                        ['active'],
+                                    totalCases: state.countriesStates[index]
+                                        ['cases'],
+                                    todayDeaths: state.countriesStates[index]
+                                        ['todayDeaths'],
+                                    deaths: state.countriesStates[index]
+                                        ['deaths'],
+                                    recovered: state.countriesStates[index]
+                                        ['recovered'],
+                                    critical: state.countriesStates[index]
+                                        ['critical'],
+                                    tests: state.countriesStates[index]
+                                        ['tests'],
+                                    todayRecovered: state.countriesStates[index]
+                                        ['todayRecovered']),
+                              ),
+                            );
+                          },
+                          child: CountryListTile(
+                            flag: state.countriesStates[index]['countryInfo']
+                                ['flag'],
+                            country: state.countriesStates[index]['country'],
+                            cases: state.countriesStates[index]['cases'],
+                          ),
+                        );
+                      } else if (countryName
+                          .toLowerCase()
+                          .contains(searchController.text.toLowerCase())) {
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        CovidCountryDetailsScreen(
                                       name: state.countriesStates[index]
                                           ['country'],
                                       image: state.countriesStates[index]
@@ -87,70 +139,33 @@ class _CovidCountriesStatesViewState extends State<CovidCountriesStatesView> {
                                           ['critical'],
                                       tests: state.countriesStates[index]
                                           ['tests'],
-                                      todayRecovered: state.countriesStates[index]['todayRecovered']),
-                                ),
-                              );
-                            },
-                            child: CountryListTile(
-                              flag: state.countriesStates[index]['countryInfo']
-                                  ['flag'],
-                              country: state.countriesStates[index]['country'],
-                              cases: state.countriesStates[index]['cases'],
-                            ),
-                          );
-                        } else if (countryName
-                            .toLowerCase()
-                            .contains(searchController.text.toLowerCase())) {
-                          return Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => CovidCountryDetailsScreen(
-                                          name: state.countriesStates[index]
-                                              ['country'],
-                                          image: state.countriesStates[index]
-                                              ['countryInfo']['flag'],
-                                          active: state.countriesStates[index]
-                                              ['active'],
-                                          totalCases: state.countriesStates[index]
-                                              ['cases'],
-                                          todayDeaths:
-                                              state.countriesStates[index]
-                                                  ['todayDeaths'],
-                                          deaths: state.countriesStates[index]
-                                              ['deaths'],
-                                          recovered: state.countriesStates[index]
-                                              ['recovered'],
-                                          critical: state.countriesStates[index]
-                                              ['critical'],
-                                          tests: state.countriesStates[index]['tests'],
-                                          todayRecovered: state.countriesStates[index]['todayRecovered']),
+                                      todayRecovered:
+                                          state.countriesStates[index]
+                                              ['todayRecovered'],
                                     ),
-                                  );
-                                },
-                                child: CountryListTile(
-                                  flag: state.countriesStates[index]
-                                      ['countryInfo']['flag'],
-                                  country: state.countriesStates[index]
-                                      ['country'],
-                                  cases: state.countriesStates[index]['cases'],
-                                ),
+                                  ),
+                                );
+                              },
+                              child: CountryListTile(
+                                flag: state.countriesStates[index]
+                                    ['countryInfo']['flag'],
+                                country: state.countriesStates[index]
+                                    ['country'],
+                                cases: state.countriesStates[index]['cases'],
                               ),
-                            ],
-                          );
-                        } else {
-                          return const SizedBox();
-                        }
-                      },
-                    );
-                  }
-                },
-              ),
-            )
-          ],
-        ),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    },
+                  );
+                }
+              },
+            ),
+          )
+        ],
       ),
     );
   }

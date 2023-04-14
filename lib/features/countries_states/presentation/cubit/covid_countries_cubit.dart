@@ -10,12 +10,23 @@ class CovidCountriesCubit extends Cubit<CovidCountriesStates> {
   final CovidCountriesStatesRepo countriesStatesRepo;
 
   Future<List<dynamic>> fetchCountriesStates() async {
-    return await countriesStatesRepo
-        .fetchCovidCountriesStates()
-        .then((countriesStates) {
-      emit(CovidCountriesLoadedState(countriesStates));
-      return countriesStates;
-    });
+    try {
+      return await countriesStatesRepo
+          .fetchCovidCountriesStates()
+          .then((countriesStates) {
+        emit(CovidCountriesLoadedState(countriesStates));
+        return countriesStates;
+      }).onError((error, stackTrace) {
+        emit(CovidCountriesErrorState(error.toString()));
+        return Future.error(
+          error.toString(),
+        );
+      });
+    } catch (e) {
+      return Future.error(
+        e.toString(),
+      );
+    }
   }
 
   void onChanged(String value) {}

@@ -5,6 +5,7 @@ import 'package:covid_19_api_bloc/features/covidstates/data/api/covid_api_servic
 import 'package:covid_19_api_bloc/features/covidstates/data/repository/covid_states_repository.dart';
 import 'package:covid_19_api_bloc/features/covidstates/presentation/cubit/covid_states_cubit.dart';
 import 'package:covid_19_api_bloc/features/dashboard/presentation/cubit/navigation_cubit.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -29,20 +30,21 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => CovidStatesCubit(
             repo: repo,
-          ),
+          )..fetchCovidStates(),
         ),
         BlocProvider(
           create: (context) => CovidCountriesCubit(
             countriesStatesRepo: countriesStatesRepo,
-          ),
-        )
+          )..fetchCountriesStates(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
+        themeMode: ThemeMode.light,
         theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+            // useMaterial3: true,
+            ),
         home: const DashBoard(),
       ),
     );

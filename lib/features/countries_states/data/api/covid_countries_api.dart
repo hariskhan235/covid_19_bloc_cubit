@@ -3,16 +3,20 @@ import 'package:http/http.dart' as http;
 
 class CovidCountriesApiService {
   Future<List<dynamic>> countriesListApi() async {
-    // ignore: prefer_typing_uninitialized_variables
-    var data;
-    final response = await http.get(
-      Uri.parse(AppUrls.countriesList),
-    );
-    if (response.statusCode == 200) {
-      data = jsonDecode(response.body);
-      return data;
-    } else {
-      throw Exception('Error Occured While Recieving response');
+    try {
+      var data;
+      final response = await http.get(
+        Uri.parse(AppUrls.countriesList),
+      );
+      if (response.statusCode == 200) {
+        data = jsonDecode(response.body);
+        return data;
+      }
+      return [data];
+    } catch (e) {
+      return Future.error(
+        e.toString(),
+      );
     }
   }
 }
